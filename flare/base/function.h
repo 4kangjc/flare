@@ -313,51 +313,34 @@ Function<R(Args...)>::Function(T&& action) {
 
 namespace details {
 
+#define FUNCTIONTYPEDEDUCER(CV_OPT, REF_OPT, NOEXCEPT_OPT)      \
+  template <class R, class Class, class... Args>                \
+  struct FunctionTypeDeducer<R (Class::*)(Args...)              \
+                                 CV_OPT REF_OPT NOEXCEPT_OPT> { \
+    using Type = R(Args...) NOEXCEPT_OPT;                       \
+  };
+
 #if defined(__GNUC__) || defined(__clang__)
 
-template <class R, class Class, class... Args, bool kNoexcept>
-struct FunctionTypeDeducer<R (Class::*)(Args...) noexcept(kNoexcept)> {
-  using Type = R(Args...) noexcept(kNoexcept);
-};
-
-template <class R, class Class, class... Args, bool kNoexcept>
-struct FunctionTypeDeducer<R (Class::*)(Args...)& noexcept(kNoexcept)> {
-  using Type = R(Args...) noexcept(kNoexcept);
-};
-
-template <class R, class Class, class... Args, bool kNoexcept>
-struct FunctionTypeDeducer<R (Class::*)(Args...) const noexcept(kNoexcept)> {
-  using Type = R(Args...) noexcept(kNoexcept);
-};
-
-template <class R, class Class, class... Args, bool kNoexcept>
-struct FunctionTypeDeducer<R (Class::*)(Args...) const& noexcept(kNoexcept)> {
-  using Type = R(Args...) noexcept(kNoexcept);
-};
+FUNCTIONTYPEDEDUCER(, , )
+FUNCTIONTYPEDEDUCER(, , noexcept)
+FUNCTIONTYPEDEDUCER(, &, )
+FUNCTIONTYPEDEDUCER(, &, noexcept)
+FUNCTIONTYPEDEDUCER(const, , )
+FUNCTIONTYPEDEDUCER(const, , noexcept)
+FUNCTIONTYPEDEDUCER(const, &, )
+FUNCTIONTYPEDEDUCER(const, &, noexcept)
 
 #else
 
-template <class R, class Class, class... Args>
-struct FunctionTypeDeducer<R (Class::*)(Args...)> {
-  using Type = R(Args...);
-};
-
-template <class R, class Class, class... Args>
-struct FunctionTypeDeducer<R (Class::*)(Args...)&> {
-  using Type = R(Args...);
-};
-
-template <class R, class Class, class... Args>
-struct FunctionTypeDeducer<R (Class::*)(Args...) const> {
-  using Type = R(Args...);
-};
-
-template <class R, class Class, class... Args>
-struct FunctionTypeDeducer<R (Class::*)(Args...) const&> {
-  using Type = R(Args...);
-};
+FUNCTIONTYPEDEDUCER(, , )
+FUNCTIONTYPEDEDUCER(, &, )
+FUNCTIONTYPEDEDUCER(const, , )
+FUNCTIONTYPEDEDUCER(const, &, )
 
 #endif
+
+#undef FUNCTIONTYPEDEDUCER
 
 }  // namespace details
 
