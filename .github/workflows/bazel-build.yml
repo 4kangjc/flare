@@ -12,12 +12,16 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Build
+    - uses: actions/checkout@v3
+      with:
+        path: /home/runner/.cache/bazel
+        key: bazel-clang
+        restore-keys: bazel-clang
+
+    - name: Build and Test
       # Build your program with clang
       working-directory: ${{github.workspace}}
-      run: bazel build --action_env=CXX=clang++ --action_env=CC=clang ...
+      run: |
+        bazel build --action_env=CXX=clang++ --action_env=CC=clang ...
+        bazel test --action_env=CXX=clang++ --action_env=CC=clang --test_output=errors ...
 
-    - name: Test
-      # Build and Execute tests
-      working-directory: ${{github.workspace}}
-      run: bazel test --action_env=CXX=clang++ --action_env=CC=clang --test_output=errors ...
